@@ -11,6 +11,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, CheckFailure, check
 import requests
 import json
+from time import *
 #just importing stuff
 
 
@@ -30,20 +31,41 @@ async def on_ready():
     await client.change_presence(activity=discord.Game('with my itty bitty toes uwu'))
 
 @client.command()
-async def setup(ctx, welcome):
-    if int(welcome) == ValueError:
+async def setupmanual(ctx, welcome):
+    print(welcome)
+    illegalchar = ["<", ">", "#"]
+    for x in illegalchar:
+        if x in welcome:
+                welcome.replace(x, "")
+    with open('servers.json', 'r') as f:
+        serverdict = json.load(f)
+    if ctx.channel.id == ValueError:
         await ctx.reply("bru this isn\'t id")
     else:
         await ctx.reply('Done 👍')
-        servers[str(ctx.message.guild.id)] = welcome
+        await ctx.send(str(ctx.message.guild.id))
+        serverdict.update(dict({str(ctx.message.guild.id) : welcome}))
         with open('servers.json', 'w') as f:
-            json.dump(servers, f)
-        
+            json.dump(serverdict, f)
+@client.command()
+async def setupauto(ctx):
+    with open('servers.json', 'r') as f:
+        serverdict = json.load(f)
+    if ctx.channel.id == ValueError:
+        await ctx.reply("bru this isn\'t id")
+    else:
+        await ctx.reply('Done 👍')
+        await ctx.send(str(ctx.guild.id))
+        serverdict.update(dict({str(ctx.guild.id) : welcome}))
+        with open('servers.json', 'w') as f:
+            json.dump(serverdict, f)
 
 
 @client.command()
 async def test(ctx):
-        await ctx.send("yo uhh if you can see this message the bot works lmao")
+    with open('servers.json', 'r') as f:
+        serverdict = json.load(f)
+    await ctx.send(serverdict[str(ctx.guild.id)])
 
 @client.command()
 async def weatherll(ctx, lat = None, lon = None):
@@ -108,20 +130,21 @@ async def jointest(ctx, member : discord.Member):
     ) 
     joinTestEmbed.set_thumbnail(url=member.avatar_url)
     await ctx.send(embed=joinTestEmbed)
-
 @client.event
 async def on_member_join(ctx, member : discord.Member):
-    server = client.get_server("886401901887914025")
-    for channel in server.channels:
-        if "welcome" in channel.name:
-            continue
+    with open('servers.json', 'r') as f:
+        serverdictwo = json.load(f)
+    welcome = client.get_channel(int(serverdictwo[ctx.Guild.id]))
     joinTestEmbed = discord.Embed(
         title = "New Member Alert!",
         color = 0x63cf5b,
         description = "A new user has joined this here server! Please welcome" + member.mention + "!"
     ) 
     joinTestEmbed.set_thumbnail(url=member.avatar_url)
-    await ctx.send(embed=joinTestEmbed)
+    await welcome.send(embed=joinTestEmbed)
 
 keep_alive()
-client.run("ODgzNTMwNzk5MjU1NzgxNDM3.YTLSLQ.GFmvPqibdmtbQBDUNpP7VjOmXho")
+
+token = os.environ['token']
+
+client.run(token)
