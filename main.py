@@ -145,6 +145,6 @@ async def on_member_join(ctx, member : discord.Member):
 
 keep_alive()
 
-token = os.environ['token']
 
-client.run(token)
+
+client.run(os.environ['token'])
