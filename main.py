@@ -3,6 +3,7 @@
 import discord
 import os
 from keep_alive import keep_alive
+import asyncio
 import time
 import datetime
 import discord.ext
@@ -15,20 +16,58 @@ from time import *
 #just importing stuff
 
 
-
-client = discord.Client()
-
-client = commands.Bot(command_prefix = '-')
+intents = discord.Intents.none()
+intents.reactions = True
+intents.members = True
+intents.guilds = True
+#client = discord.Client()
+client = commands.Bot(command_prefix = '+', intents = intents)
 #prefix set
-
+client.remove_command('help')
 setup = False
 
 servers = {}
+
 
 @client.event
 async def on_ready():
     print("bot online B)")
     await client.change_presence(activity=discord.Game('with my itty bitty toes uwu'))
+
+@client.event
+async def on_member_join(member):
+    print(member)
+    print(member.guild.id)
+
+    with open('servers.json', 'r') as f:
+      serverdict = json.load(f)
+
+    joinTestEmbed = discord.Embed(
+        title = "New Member Alert!",
+        color = 0x63cf5b,
+        description = "A new user has joined this here server! Please welcome" + member.mention + "!"
+    ) 
+    joinTestEmbed.set_thumbnail(url=member.avatar_url)
+    cid = int()
+    for server in serverdict:
+      if int(server) == member.guild.id:
+        print("check")
+        cid = serverdict[server] 
+    print("cid: ",cid)
+    channel = client.get_channel(cid)
+    print(channel)
+    await channel.send(embed=joinTestEmbed)
+    #await member.send(f'Hey, {member} welcome to {member.guild.name}! Enjoy your stay!')
+
+
+
+@client.event
+async def on_member_remove(member : discord.Member):
+    print("Someone has left")
+
+@client.command()
+async def dm(ctx, member : discord.Member):
+    await member.send(member.guild.name)
 
 @client.command()
 async def setupmanual(ctx, welcome):
@@ -55,6 +94,7 @@ async def setupauto(ctx):
         await ctx.reply("bru this isn\'t id")
     else:
         await ctx.reply('Done 👍')
+        welcome = ctx.channel.id
         await ctx.send(str(ctx.guild.id))
         serverdict.update(dict({str(ctx.guild.id) : welcome}))
         with open('servers.json', 'w') as f:
@@ -130,18 +170,18 @@ async def jointest(ctx, member : discord.Member):
     ) 
     joinTestEmbed.set_thumbnail(url=member.avatar_url)
     await ctx.send(embed=joinTestEmbed)
-@client.event
-async def on_member_join(ctx, member : discord.Member):
-    with open('servers.json', 'r') as f:
-        serverdictwo = json.load(f)
-    welcome = client.get_channel(int(serverdictwo[ctx.Guild.id]))
-    joinTestEmbed = discord.Embed(
-        title = "New Member Alert!",
-        color = 0x63cf5b,
-        description = "A new user has joined this here server! Please welcome" + member.mention + "!"
-    ) 
-    joinTestEmbed.set_thumbnail(url=member.avatar_url)
-    await welcome.send(embed=joinTestEmbed)
+
+@client.command(pass_context=True)
+async def purge(ctx, amount=30):
+    channel = ctx.message.channel
+    messages = []
+    async for message in channel.history(limit=amount + 1):
+              messages.append(message)
+
+    await channel.delete_messages(messages)
+    await ctx.send(f'{amount} messages have been purged by {ctx.message.author.mention}')
+
+
 
 keep_alive()
 
