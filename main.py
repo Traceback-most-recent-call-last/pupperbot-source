@@ -20,6 +20,10 @@ intents = discord.Intents.none()
 intents.reactions = True
 intents.members = True
 intents.guilds = True
+intents.typing = True
+intents.presences = True
+intents.messages=True 
+intents.guilds=True
 #client = discord.Client()
 client = commands.Bot(command_prefix = '+', intents = intents)
 #prefix set
@@ -57,13 +61,28 @@ async def on_member_join(member):
     channel = client.get_channel(cid)
     print(channel)
     await channel.send(embed=joinTestEmbed)
-    #await member.send(f'Hey, {member} welcome to {member.guild.name}! Enjoy your stay!')
+    await member.send(f'Hey, {member} welcome to {member.guild.name}! Enjoy your stay!')
 
 
 
 @client.event
 async def on_member_remove(member : discord.Member):
-    print("Someone has left")
+    with open('servers.json', 'r') as f:
+      serverdict = json.load(f)
+    leavetestEmbed = discord.Embed(
+        title = "Someone Left!",
+        color = 0xff0000,
+        description = member.mention + " has left the server."
+    )
+    cid2 = int()
+    for server in serverdict:
+      if int(server) == member.guild.id:
+        print("check")
+        cid2 = serverdict[server] 
+    print("cid: ",cid2)
+    channel = client.get_channel(cid2)
+    print(channel)
+    await channel.send(embed=leavetestEmbed)
 
 @client.command()
 async def dm(ctx, member : discord.Member):
@@ -86,6 +105,7 @@ async def setupmanual(ctx, welcome):
         serverdict.update(dict({str(ctx.message.guild.id) : welcome}))
         with open('servers.json', 'w') as f:
             json.dump(serverdict, f)
+#            
 @client.command()
 async def setupauto(ctx):
     with open('servers.json', 'r') as f:
@@ -99,14 +119,13 @@ async def setupauto(ctx):
         serverdict.update(dict({str(ctx.guild.id) : welcome}))
         with open('servers.json', 'w') as f:
             json.dump(serverdict, f)
-
-
+#test command
 @client.command()
 async def test(ctx):
     with open('servers.json', 'r') as f:
         serverdict = json.load(f)
     await ctx.send(serverdict[str(ctx.guild.id)])
-
+#weather command for longitude & latitude
 @client.command()
 async def weatherll(ctx, lat = None, lon = None):
     try:
@@ -130,7 +149,7 @@ async def weatherll(ctx, lat = None, lon = None):
         await ctx.send(embed=weatherembed)
     except TypeError:
         await ctx.send("You silly goose, you forgot to put in a longitude and latitude!")
-
+#weather command for cities
 @client.command()
 async def weatherc(ctx, *args):
     try:
