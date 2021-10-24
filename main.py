@@ -114,7 +114,6 @@ async def setupauto(ctx):
     else:
         await ctx.message.add_reaction('✅')
         welcome = ctx.channel.id
-        await ctx.message.add_reaction('✅')
         serverdict.update(dict({str(ctx.guild.id) : welcome}))
         with open('servers.json', 'w') as f:
             json.dump(serverdict, f)
