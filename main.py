@@ -100,9 +100,8 @@ async def setupmanual(ctx, welcome):
     if ctx.channel.id == ValueError:
         await ctx.reply("bru this isn\'t id")
     else:
-        await ctx.reply('Done 👍')
-        await ctx.send(str(ctx.message.guild.id))
-        serverdict.update(dict({str(ctx.message.guild.id) : welcome}))
+        await ctx.message.add_reaction('✅')
+        serverdict.update(dict({str(ctx.message.guild.id) : int(welcome)}))
         with open('servers.json', 'w') as f:
             json.dump(serverdict, f)
 #            
