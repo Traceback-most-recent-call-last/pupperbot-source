@@ -88,6 +88,11 @@ async def on_member_remove(member : discord.Member):
 async def dm(ctx, member : discord.Member):
     await member.send(member.guild.name)
 
+@client.event
+async def on_message(message):
+    if client.user.mentioned_in(message):
+        await message.channel.send('Listen man, I will not tolerate you pinging me in this here server. Please shut the hell up, and leave me the hell alone.')
+
 @client.command()
 async def setupmanual(ctx, welcome):
     print(welcome)
